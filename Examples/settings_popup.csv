@@ -1,0 +1,19 @@
+key,en,uk
+SETTINGS_TITLE,Settings,Налаштування
+SETTINGS_SOUND,Sound,Звук
+SETTINGS_MUSIC,Music,Музика
+SETTINGS_VIBRATION,Vibration,Вібрація
+SETTINGS_LANGUAGE,Language,Мова
+SETTINGS_NOTIFICATIONS,Notifications,Сповіщення
+SETTINGS_PRIVACY_POLICY,Privacy Policy,Політика конфіденційності
+SETTINGS_TERMS_OF_USE,Terms of Use,Умови використання
+SETTINGS_RESTORE_PURCHASES,Restore Purchases,Відновити покупки
+SETTINGS_VERSION,Version,Версія
+SETTINGS_CLOSE,Close,Закрити
+SETTINGS_ON,On,Увімк
+SETTINGS_OFF,Off,Вимк
+SETTINGS_CONFIRM,Confirm,Підтвердити
+SETTINGS_CANCEL,Cancel,Скасувати
+SETTINGS_RESET_PROGRESS,Reset Progress,Скинути прогрес
+SETTINGS_RESET_CONFIRM_TITLE,Are you sure?,Ви впевнені?
+SETTINGS_RESET_CONFIRM_BODY,"All progress will be lost, this cannot be undone.","Весь прогрес буде втрачено, це незворотно."
