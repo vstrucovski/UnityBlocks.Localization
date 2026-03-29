@@ -41,7 +41,7 @@ namespace UnityBlocks.Localization.UI
             _dropdown.AddOptions(options);
 
             // set current selection without triggering OnValueChanged
-            var currentCode = PlayerPrefs.GetString("app_language", _settings.DefaultLanguage);
+            var currentCode = PlayerPrefs.GetString(_settings.PlayerPrefsKey, _settings.DefaultLanguage);
             var index = _settings.Aliases.FindIndex(a => a.code == currentCode);
             _dropdown.SetValueWithoutNotify(Mathf.Max(0, index));
         }
@@ -60,7 +60,7 @@ namespace UnityBlocks.Localization.UI
                 var culture = new CultureInfo(alias.code);
                 return culture.NativeName;
             }
-            catch
+            catch (CultureNotFoundException)
             {
                 return alias.systemLanguage.ToString();
             }

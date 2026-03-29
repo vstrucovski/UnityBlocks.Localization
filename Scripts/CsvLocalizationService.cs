@@ -9,7 +9,7 @@ namespace UnityBlocks.Localization
     {
         private readonly List<string> _availableLanguages = new();
         private readonly Dictionary<string, string> _active = new();
-        private string _csvText;
+        private string[] _lines;
         private string _currentLang;
 
         public string CurrentLanguage => _currentLang;
@@ -18,7 +18,6 @@ namespace UnityBlocks.Localization
 
         public void LoadFromCsv(string csvText)
         {
-            _csvText = csvText;
             _availableLanguages.Clear();
             _active.Clear();
             IsLoaded = false;
@@ -29,14 +28,17 @@ namespace UnityBlocks.Localization
                 return;
             }
 
-            var lines = csvText.Split('\n', StringSplitOptions.RemoveEmptyEntries);
-            if (lines.Length < 2)
+            // normalize line endings once so \r never leaks into parsed values
+            _lines = csvText.Replace("\r\n", "\n").Replace('\r', '\n')
+                            .Split('\n', StringSplitOptions.RemoveEmptyEntries);
+
+            if (_lines.Length < 2)
             {
                 Debug.LogError("[Localization] CSV has no data rows.");
                 return;
             }
 
-            var headers = SplitCsvLine(lines[0]);
+            var headers = SplitCsvLine(_lines[0]);
             for (var i = 1; i < headers.Length; i++)
                 _availableLanguages.Add(headers[i].Trim());
 
@@ -68,8 +70,7 @@ namespace UnityBlocks.Localization
         {
             _active.Clear();
 
-            var lines = _csvText.Split('\n', StringSplitOptions.RemoveEmptyEntries);
-            var headers = SplitCsvLine(lines[0]);
+            var headers = SplitCsvLine(_lines[0]);
 
             var langIndex = -1;
             for (var i = 1; i < headers.Length; i++)
@@ -85,9 +86,9 @@ namespace UnityBlocks.Localization
                 return;
             }
 
-            for (var i = 1; i < lines.Length; i++)
+            for (var i = 1; i < _lines.Length; i++)
             {
-                var cols = SplitCsvLine(lines[i]);
+                var cols = SplitCsvLine(_lines[i]);
                 if (cols.Length <= langIndex) continue;
 
                 var key = cols[0].Trim();
@@ -103,16 +104,34 @@ namespace UnityBlocks.Localization
             var result = new List<string>();
             var current = new StringBuilder();
             var inQuotes = false;
+            var i = 0;
 
-            foreach (var c in line)
+            while (i < line.Length)
             {
-                if (c == '"') inQuotes = !inQuotes;
+                var c = line[i];
+
+                if (c == '"')
+                {
+                    if (inQuotes && i + 1 < line.Length && line[i + 1] == '"')
+                    {
+                        // escaped quote "" → literal "
+                        current.Append('"');
+                        i += 2;
+                        continue;
+                    }
+                    inQuotes = !inQuotes;
+                }
                 else if (c == ',' && !inQuotes)
                 {
                     result.Add(current.ToString());
                     current.Clear();
                 }
-                else current.Append(c);
+                else
+                {
+                    current.Append(c);
+                }
+
+                i++;
             }
 
             result.Add(current.ToString());

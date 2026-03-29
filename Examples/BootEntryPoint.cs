@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace UnityBlocks.Localization
+namespace UnityBlocks.Localization.Examples
 {
     public class BootEntryPoint : MonoBehaviour
     {

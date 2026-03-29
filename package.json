@@ -3,16 +3,20 @@
   "displayName": "UnityBlocks.Localization",
   "version": "0.1.0",
   "unity": "2022.2",
-  "description": "dev module",
+  "description": "Lightweight CSV-based localization for Unity. Supports remote loading, persistent caching, system language detection, and DI-friendly service injection.",
   "dependencies": {
   },
   "author": {
     "name": "Valerii Strukovski"
   },
   "keywords": [
-    "script"
+    "localization",
+    "i18n",
+    "csv",
+    "ui",
+    "textmeshpro"
   ],
-  "category": "editor extensions",
+  "category": "extensions",
   "repository": {
     "type": "git",
     "url": "https://github.com/vstrucovski/UnityBlocks.Localization.git"

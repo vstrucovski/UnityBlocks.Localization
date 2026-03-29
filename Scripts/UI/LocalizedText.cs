@@ -3,13 +3,13 @@ using UnityEngine;
 
 namespace UnityBlocks.Localization.UI
 {
+    [RequireComponent(typeof(TMP_Text))]
     public class LocalizedText : MonoBehaviour
     {
         [SerializeField] private string _key;
+        [SerializeField] private TMP_Text textView;
 
-        private TMP_Text _text;
-
-        private void Awake() => _text = GetComponent<TMP_Text>();
+        private void Awake() => textView ??= GetComponent<TMP_Text>();
 
         private void OnEnable()
         {
@@ -24,13 +24,13 @@ namespace UnityBlocks.Localization.UI
             LocalizationEvents.OnLocalizationLoaded -= Refresh;
         }
 
-        private void Refresh() => _text.text = Loc.Get(_key);
+        private void Refresh() => textView.text = Loc.Get(_key);
 
 #if UNITY_EDITOR
         private void OnValidate()
         {
-            if (_text == null)
-                _text = GetComponent<TMP_Text>();
+            if (textView == null)
+                textView = GetComponent<TMP_Text>();
 
             if (!string.IsNullOrEmpty(_key) && Application.isPlaying && Loc.IsReady)
                 Refresh();

@@ -7,12 +7,12 @@ namespace UnityBlocks.Localization.Data
         menuName = "Unity.Blocks/Localization/Language Settings")]
     public class LocalizationLanguageSettings : ScriptableObject
     {
-      
-
         [SerializeField] private string _defaultLanguage = "en";
+        [SerializeField] private string _playerPrefsKey = "app_language";
         [SerializeField] private List<LanguageAlias> _aliases = new();
 
         public string DefaultLanguage => _defaultLanguage;
+        public string PlayerPrefsKey => _playerPrefsKey;
         public List<LanguageAlias> Aliases => _aliases;
 
         public string Resolve(SystemLanguage systemLanguage)

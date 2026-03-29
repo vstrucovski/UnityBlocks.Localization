@@ -7,6 +7,7 @@ namespace UnityBlocks.Localization
         string CurrentLanguage { get; }
         IReadOnlyList<string> AvailableLanguages { get; }
         bool IsLoaded { get; }
+        void LoadFromCsv(string csvText);
         void SetLanguage(string lang);
         string Get(string key);
         bool TryGet(string key, out string value);

@@ -14,31 +14,43 @@ namespace UnityBlocks.Localization
         [SerializeField] private LocalizationLanguageSettings _settings;
         [SerializeField] private string _remoteUrl;
         [SerializeField] private TextAsset _fallbackCsv;
+
         private const string CacheFileName = "localization.csv";
-        private readonly CsvLocalizationService _localization = new();
+        private ILocalizationService _localization;
+        private bool _isLoading;
+
+        /// <summary>
+        /// Call before LoadAsync to supply a custom service (e.g. from a DI container).
+        /// Falls back to CsvLocalizationService if not called.
+        /// </summary>
+        public void Inject(ILocalizationService service) => _localization = service;
 
         public async UniTask LoadAsync(CancellationToken ct = default)
         {
-            Loc.Init(_localization);
+            if (_isLoading) return;
+            _isLoading = true;
 
-            var csvText = await TryDownloadAsync(ct)
-                          ?? TryReadFromPersistentPath()
-                          ?? FallbackCsv();
-
-            if (csvText == null)
+            try
             {
-                Debug.LogError("[Localization] All sources failed.");
-                return;
+                _localization ??= new CsvLocalizationService();
+                Loc.Init(_localization, _settings?.PlayerPrefsKey);
+
+                var csvText = await TryDownloadAsync(ct)
+                              ?? TryReadFromPersistentPath()
+                              ?? FallbackCsv();
+
+                if (csvText == null)
+                {
+                    Debug.LogError("[Localization] All sources failed.");
+                    return;
+                }
+
+                Apply(csvText);
             }
-
-            Apply(csvText);
-        }
-
-        private string FallbackCsv()
-        {
-            if (_fallbackCsv == null) return null;
-            Debug.LogWarning("[Localization] Using fallback embedded CSV.");
-            return _fallbackCsv.text;
+            finally
+            {
+                _isLoading = false;
+            }
         }
 
         public void LoadFromTextAsset(TextAsset textAsset)
@@ -72,6 +84,7 @@ namespace UnityBlocks.Localization
 
         private void Apply(string csvText)
         {
+            _localization ??= new CsvLocalizationService();
             _localization.LoadFromCsv(csvText);
             _localization.SetLanguage(ResolveInitialLanguage());
         }
@@ -103,6 +116,13 @@ namespace UnityBlocks.Localization
             }
         }
 
+        private string FallbackCsv()
+        {
+            if (_fallbackCsv == null) return null;
+            Debug.LogWarning("[Localization] Using fallback embedded CSV.");
+            return _fallbackCsv.text;
+        }
+
         private static string TryReadFromPersistentPath(string fileName = CacheFileName)
         {
             var path = GetCachePath(fileName);
@@ -128,19 +148,21 @@ namespace UnityBlocks.Localization
 
         private string ResolveInitialLanguage()
         {
-            var saved = PlayerPrefs.GetString("app_language", null);
+            var key = _settings?.PlayerPrefsKey ?? "app_language";
+            var saved = PlayerPrefs.GetString(key, null);
             if (!string.IsNullOrEmpty(saved) && _localization.AvailableLanguages.Contains(saved))
                 return saved;
 
             var code = _settings != null
                 ? _settings.Resolve(Application.systemLanguage)
-                : "en";
+                : null;
 
-            return _localization.AvailableLanguages.Contains(code)
-                ? code
-                : _localization.AvailableLanguages.Count > 0
-                    ? _localization.AvailableLanguages[0]
-                    : "en";
+            if (code != null && _localization.AvailableLanguages.Contains(code))
+                return code;
+
+            return _localization.AvailableLanguages.Count > 0
+                ? _localization.AvailableLanguages[0]
+                : _settings?.DefaultLanguage ?? string.Empty;
         }
     }
 }

@@ -1,6 +1,6 @@
 # install
 ```json
-"unityblocks.localization" : "git@github.com:vstrucovski/UnityBlocks.Localization.git"
+"unityblocks.localization" : "https://github.com/vstrucovski/UnityBlocks.Localization.git"
 ```
 
 # required dependencies
