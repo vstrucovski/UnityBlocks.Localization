@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using System.Text;
 using UnityEngine;
 
-namespace UnityBlocks.Localization
+namespace UnityBlocks.Localization.Services
 {
-    public class CsvLocalizationService : ILocalizationService
+    public class CsvLocalizationService : Localization.ILocalizationService
     {
         private readonly Dictionary<string, Dictionary<string, string>> _data = new();
         private readonly List<string> _availableLanguages = new();

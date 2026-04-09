@@ -2,9 +2,9 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace UnityBlocks.Localization
+namespace UnityBlocks.Localization.Services
 {
-    public class TsvLocalizationService : ILocalizationService
+    public class TsvLocalizationService : Localization.ILocalizationService
     {
         // lang → (key → value); all languages parsed upfront so merging is cheap
         private readonly Dictionary<string, Dictionary<string, string>> _data = new();
