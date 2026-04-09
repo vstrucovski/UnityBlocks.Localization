@@ -4,7 +4,7 @@ using UnityEngine;
 namespace UnityBlocks.Localization.Data
 {
     [CreateAssetMenu(fileName = "LocalizationLanguageSettings",
-        menuName = "Unity.Blocks/Localization/Language Settings")]
+        menuName = "Unity Blocks/Localization/Language Settings")]
     public class LocalizationLanguageSettings : ScriptableObject
     {
         [SerializeField] private string _defaultLanguage = "en";
