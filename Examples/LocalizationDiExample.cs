@@ -5,6 +5,7 @@
 // (kept in comments so this file compiles without those packages).
 
 using Cysharp.Threading.Tasks;
+using UnityBlocks.Localization.Services;
 using UnityEngine;
 
 namespace UnityBlocks.Localization.Examples

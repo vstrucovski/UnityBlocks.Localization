@@ -1,9 +1,7 @@
 using System.Collections.Generic;
 
-namespace UnityBlocks.Localization
+namespace UnityBlocks.Localization.Services
 {
-    public enum LocalizationTableFormat { Csv, Tsv }
-
     public interface ILocalizationService
     {
         string CurrentLanguage { get; }
@@ -11,7 +9,6 @@ namespace UnityBlocks.Localization
         bool IsLoaded { get; }
         void Load(string text, LocalizationTableFormat format, bool merge = false);
         void SetLanguage(string lang);
-        string Get(string key);
         bool TryGet(string key, out string value);
     }
 }

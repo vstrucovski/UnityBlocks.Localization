@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading;
 using Cysharp.Threading.Tasks;
 using UnityBlocks.Localization.Data;
+using UnityBlocks.Localization.Services;
 using UnityEngine;
 using UnityEngine.Networking;
 
@@ -12,8 +13,10 @@ namespace UnityBlocks.Localization
     public class LocalizationLoader : MonoBehaviour
     {
         [SerializeField] private LocalizationLanguageSettings _settings;
+        [SerializeField] private LocalizationTableFormat _format = LocalizationTableFormat.Csv;
         [SerializeField] private string _remoteUrl;
         [SerializeField] private TextAsset _fallbackCsv;
+        [SerializeField] private TextAsset _fallbackTsv;
 
         private const string CacheFileName = "localization.csv";
         private ILocalizationService _localization;
@@ -33,11 +36,11 @@ namespace UnityBlocks.Localization
             try
             {
                 _localization ??= new CsvLocalizationService();
-                Loc.Init(_localization, _settings?.PlayerPrefsKey);
+                Loc.Init(_localization, _settings, _settings?.PlayerPrefsKey);
 
                 var csvText = await TryDownloadAsync(ct)
                               ?? TryReadFromPersistentPath()
-                              ?? FallbackCsv();
+                              ?? FallbackText();
 
                 if (csvText == null)
                 {
@@ -64,6 +67,44 @@ namespace UnityBlocks.Localization
             Apply(textAsset.text);
         }
 
+        public void MergeFromTextAsset(TextAsset textAsset)
+        {
+            if (textAsset == null)
+            {
+                Debug.LogWarning("[Localization] TextAsset is null.");
+                return;
+            }
+
+            Apply(textAsset.text, merge: true);
+        }
+
+        public async UniTask MergeFromUrlAsync(string url, CancellationToken ct = default)
+        {
+            if (string.IsNullOrEmpty(url))
+            {
+                Debug.LogWarning("[Localization] MergeFromUrlAsync: URL is empty.");
+                return;
+            }
+
+            try
+            {
+                using var req = UnityWebRequest.Get(url);
+                await req.SendWebRequest().WithCancellation(ct);
+
+                if (req.result != UnityWebRequest.Result.Success)
+                {
+                    Debug.LogWarning($"[Localization] Merge download failed: {req.error}");
+                    return;
+                }
+
+                Apply(req.downloadHandler.text, merge: true);
+            }
+            catch (Exception e) when (e is not OperationCanceledException)
+            {
+                Debug.LogWarning($"[Localization] Merge download exception: {e.Message}");
+            }
+        }
+
         public bool LoadFromPersistentPath(string fileName = null)
         {
             var text = TryReadFromPersistentPath(fileName ?? CacheFileName);
@@ -82,11 +123,19 @@ namespace UnityBlocks.Localization
 
         private void OnReloadRequested(string fileName) => LoadFromPersistentPath(fileName);
 
-        private void Apply(string csvText)
+        private void Apply(string text, bool merge = false)
         {
+            if (merge && _localization == null)
+            {
+                Debug.LogWarning("[Localization] Call LoadAsync before merging additional tables.");
+                return;
+            }
+
             _localization ??= new CsvLocalizationService();
-            _localization.LoadFromCsv(csvText);
-            _localization.SetLanguage(ResolveInitialLanguage());
+            _localization.Load(text, _format, merge);
+
+            if (!merge)
+                _localization.SetLanguage(ResolveInitialLanguage());
         }
 
         private async UniTask<string> TryDownloadAsync(CancellationToken ct)
@@ -116,8 +165,15 @@ namespace UnityBlocks.Localization
             }
         }
 
-        private string FallbackCsv()
+        private string FallbackText()
         {
+            if (_format == LocalizationTableFormat.Tsv)
+            {
+                if (_fallbackTsv == null) return null;
+                Debug.LogWarning("[Localization] Using fallback embedded TSV.");
+                return _fallbackTsv.text;
+            }
+
             if (_fallbackCsv == null) return null;
             Debug.LogWarning("[Localization] Using fallback embedded CSV.");
             return _fallbackCsv.text;

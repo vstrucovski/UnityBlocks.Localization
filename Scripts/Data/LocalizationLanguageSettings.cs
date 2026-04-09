@@ -23,5 +23,14 @@ namespace UnityBlocks.Localization.Data
 
             return _defaultLanguage;
         }
+
+        public SystemLanguage? Resolve(string code)
+        {
+            foreach (var alias in _aliases)
+                if (alias.code == code)
+                    return alias.systemLanguage;
+
+            return null;
+        }
     }
 }

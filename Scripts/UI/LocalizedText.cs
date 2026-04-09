@@ -32,8 +32,12 @@ namespace UnityBlocks.Localization.UI
             if (textView == null)
                 textView = GetComponent<TMP_Text>();
 
-            if (!string.IsNullOrEmpty(_key) && Application.isPlaying && Loc.IsReady)
+            if (string.IsNullOrEmpty(_key)) return;
+
+            if (Application.isPlaying && Loc.IsReady)
                 Refresh();
+            else if (!Application.isPlaying)
+                textView.text = $"${_key}";
         }
 #endif
     }
