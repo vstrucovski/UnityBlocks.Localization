@@ -7,6 +7,7 @@ namespace UnityBlocks.Localization.UI
     public class LocalizedText : MonoBehaviour
     {
         [SerializeField] private string _key;
+        [SerializeField] private string[] _params;
         [SerializeField] private TMP_Text textView;
 
         private void Awake() => textView ??= GetComponent<TMP_Text>();
@@ -24,7 +25,20 @@ namespace UnityBlocks.Localization.UI
             LocalizationEvents.OnLocalizationLoaded -= Refresh;
         }
 
-        private void Refresh() => textView.text = Loc.Get(_key);
+        public void SetParams(params string[] args)
+        {
+            _params = args;
+            Refresh();
+        }
+
+        private void Refresh()
+        {
+            var text = Loc.Get(_key);
+            if (_params != null && _params.Length > 0)
+                // ReSharper disable once CoVariantArrayConversion
+                text = string.Format(text, _params);
+            textView.text = text;
+        }
 
 #if UNITY_EDITOR
         private void OnValidate()
@@ -37,7 +51,7 @@ namespace UnityBlocks.Localization.UI
             if (Application.isPlaying && Loc.IsReady)
                 Refresh();
             else if (!Application.isPlaying)
-                textView.text = $"${_key}";
+                textView.text = _params is {Length: > 0} ? $"${_key} [{string.Join(", ", _params)}]" : $"${_key}";
         }
 #endif
     }
