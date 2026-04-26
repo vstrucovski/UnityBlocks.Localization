@@ -25,6 +25,12 @@ namespace UnityBlocks.Localization.UI
             LocalizationEvents.OnLocalizationLoaded -= Refresh;
         }
 
+        public void SetKey(string value)
+        {
+            _key = value;
+            Refresh();
+        }
+
         public void SetParams(params string[] args)
         {
             _params = args;
