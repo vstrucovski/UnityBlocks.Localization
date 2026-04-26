@@ -1,7 +1,7 @@
 {
   "name": "unityblocks.localization",
   "displayName": "UnityBlocks.Localization",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "unity": "2022.2",
   "description": "Lightweight CSV-based localization for Unity. Supports remote loading, persistent caching, system language detection, and DI-friendly service injection.",
   "dependencies": {
