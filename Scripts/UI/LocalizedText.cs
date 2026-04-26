@@ -10,6 +10,8 @@ namespace UnityBlocks.Localization.UI
         [SerializeField] private string[] _params;
         [SerializeField] private TMP_Text textView;
 
+        public TMP_Text TextView => textView;
+
         private void Awake() => textView ??= GetComponent<TMP_Text>();
 
         private void OnEnable()
