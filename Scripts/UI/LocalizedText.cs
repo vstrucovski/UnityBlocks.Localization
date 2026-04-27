@@ -8,6 +8,7 @@ namespace UnityBlocks.Localization.UI
     {
         [SerializeField] private string _key;
         [SerializeField] private string[] _params;
+        [SerializeField] private string _formatTemplate;
         [SerializeField] private TMP_Text textView;
 
         public TMP_Text TextView => textView;
@@ -41,11 +42,25 @@ namespace UnityBlocks.Localization.UI
 
         private void Refresh()
         {
-            var text = Loc.Get(_key);
-            if (_params != null && _params.Length > 0)
+            var localized = Loc.Get(_key);
+
+            if (!string.IsNullOrEmpty(_formatTemplate))
+            {
+                var args = new string[1 + (_params?.Length ?? 0)];
+                args[0] = localized;
+                _params?.CopyTo(args, 1);
                 // ReSharper disable once CoVariantArrayConversion
-                text = string.Format(text, _params);
-            textView.text = text;
+                textView.text = string.Format(_formatTemplate, args);
+            }
+            else if (_params != null && _params.Length > 0)
+            {
+                // ReSharper disable once CoVariantArrayConversion
+                textView.text = string.Format(localized, _params);
+            }
+            else
+            {
+                textView.text = localized;
+            }
         }
 
 #if UNITY_EDITOR
@@ -59,7 +74,12 @@ namespace UnityBlocks.Localization.UI
             if (Application.isPlaying && Loc.IsReady)
                 Refresh();
             else if (!Application.isPlaying)
-                textView.text = _params is {Length: > 0} ? $"${_key} [{string.Join(", ", _params)}]" : $"${_key}";
+            {
+                var preview = _params is {Length: > 0} ? $"${_key} [{string.Join(", ", _params)}]" : $"${_key}";
+                textView.text = !string.IsNullOrEmpty(_formatTemplate)
+                    ? string.Format(_formatTemplate, preview)
+                    : preview;
+            }
         }
 #endif
     }
