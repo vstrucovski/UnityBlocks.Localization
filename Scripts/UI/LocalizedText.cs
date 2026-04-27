@@ -56,10 +56,6 @@ namespace UnityBlocks.Localization.UI
                 _params.CopyTo(args, 1);
                 textView.text = string.Format(_formatTemplate, args);
             }
-            else if (hasTemplate)
-            {
-                textView.text = string.Format(_formatTemplate, localized);
-            }
             else if (hasParams)
             {
                 textView.text = string.Format(localized, (object[]) _params);
@@ -82,10 +78,19 @@ namespace UnityBlocks.Localization.UI
                 Refresh();
             else if (!Application.isPlaying)
             {
-                var preview = _params is {Length: > 0} ? $"${_key} [{string.Join(", ", _params)}]" : $"${_key}";
-                textView.text = !string.IsNullOrEmpty(_formatTemplate)
-                    ? string.Format(_formatTemplate, preview)
-                    : preview;
+                if (_params is {Length: > 0} && !string.IsNullOrEmpty(_formatTemplate))
+                {
+                    var preview = new object[1 + _params.Length];
+                    preview[0] = $"${_key}";
+                    _params.CopyTo(preview, 1);
+                    textView.text = string.Format(_formatTemplate, preview);
+                }
+                else
+                {
+                    textView.text = _params is {Length: > 0}
+                        ? $"${_key} [{string.Join(", ", _params)}]"
+                        : $"${_key}";
+                }
             }
         }
 #endif
