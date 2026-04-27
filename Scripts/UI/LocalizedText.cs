@@ -12,6 +12,7 @@ namespace UnityBlocks.Localization.UI
         [SerializeField] private TMP_Text textView;
 
         public TMP_Text TextView => textView;
+        public string Key => _key;
 
         private void Awake() => textView ??= GetComponent<TMP_Text>();
 
@@ -42,20 +43,26 @@ namespace UnityBlocks.Localization.UI
 
         private void Refresh()
         {
-            var localized = Loc.Get(_key);
+            if (textView == null) return;
 
-            if (!string.IsNullOrEmpty(_formatTemplate))
+            var localized = Loc.Get(_key);
+            var hasParams = _params != null && _params.Length > 0;
+            var hasTemplate = !string.IsNullOrEmpty(_formatTemplate);
+
+            if (hasTemplate && hasParams)
             {
-                var args = new string[1 + (_params?.Length ?? 0)];
+                var args = new object[1 + _params.Length];
                 args[0] = localized;
-                _params?.CopyTo(args, 1);
-                // ReSharper disable once CoVariantArrayConversion
+                _params.CopyTo(args, 1);
                 textView.text = string.Format(_formatTemplate, args);
             }
-            else if (_params != null && _params.Length > 0)
+            else if (hasTemplate)
             {
-                // ReSharper disable once CoVariantArrayConversion
-                textView.text = string.Format(localized, _params);
+                textView.text = string.Format(_formatTemplate, localized);
+            }
+            else if (hasParams)
+            {
+                textView.text = string.Format(localized, (object[]) _params);
             }
             else
             {
