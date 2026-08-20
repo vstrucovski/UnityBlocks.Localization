@@ -33,7 +33,7 @@ namespace UnityBlocks.Localization.Services
                 return;
             }
 
-            ParseInto(text, _data);
+            ParseInto(text, format, _data);
 
             if (_data.Count == 0)
             {
@@ -73,9 +73,10 @@ namespace UnityBlocks.Localization.Services
         public bool TryGet(string key, out string value) =>
             _active.TryGetValue(key, out value);
 
-        private static void ParseInto(string text, Dictionary<string, Dictionary<string, string>> target)
+        private static void ParseInto(string text, LocalizationTableFormat format, Dictionary<string, Dictionary<string, string>> target)
         {
-            var rows = ParseRows(text);
+            var delimiter = format == LocalizationTableFormat.Csv ? ',' : '\t';
+            var rows = ParseRows(text, delimiter);
             if (rows.Count < 2) return;
 
             var headers = rows[0];
@@ -104,10 +105,10 @@ namespace UnityBlocks.Localization.Services
             }
         }
 
-        // Quote-aware TSV row splitter: a cell wrapped in double quotes may itself contain
-        // tabs/newlines (Google Sheets exports a cell that way when it has a real line break
-        // typed into it), so rows can't be found with a blind Split('\n') first.
-        private static List<List<string>> ParseRows(string text)
+        // Quote-aware row splitter: a cell wrapped in double quotes may itself contain the
+        // delimiter or newlines (Google Sheets exports a cell that way when it has a real line
+        // break typed into it), so rows can't be found with a blind Split('\n') first.
+        private static List<List<string>> ParseRows(string text, char delimiter)
         {
             var rows = new List<List<string>>();
             var cols = new List<string>();
@@ -147,7 +148,7 @@ namespace UnityBlocks.Localization.Services
                         continue;
                     }
 
-                    if (c == '\t')
+                    if (c == delimiter)
                     {
                         cols.Add(cell.ToString());
                         cell.Clear();
